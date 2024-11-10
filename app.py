@@ -1150,4 +1150,211 @@ elif menu == "Comments and Notes":
     comments_and_notes()
 elif menu == "Prioritization Metrics":
     prioritization_metrics()
+import streamlit as st
+import pandas as pd
+import altair as alt
+from datetime import date, timedelta
+import os
+
+# Gantt Chart Visualization
+def gantt_chart_visualization():
+    st.header("Gantt Chart Visualization")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available to display in Gantt chart.")
+        return
+    
+    # Prepare data for Gantt chart
+    df['Start Date'] = pd.to_datetime(df['Start Date'])
+    df['End Date'] = pd.to_datetime(df['End Date'])
+    df['Duration'] = (df['End Date'] - df['Start Date']).dt.days
+
+    chart = alt.Chart(df).mark_bar().encode(
+        x='Start Date:T',
+        x2='End Date:T',
+        y=alt.Y('Project Name', sort=alt.SortField("Start Date", order="ascending")),
+        color='Priority'
+    ).properties(width=600, height=400)
+
+    st.altair_chart(chart)
+
+# Task Dependencies and Sequencing
+def manage_task_dependencies():
+    st.header("Manage Task Dependencies")
+    project_name = st.selectbox("Select Project", load_projects()["Project Name"].unique())
+    task_name = st.text_input("Task Name")
+    dependency_task = st.selectbox("Select Prerequisite Task", load_projects()["Project Name"].unique())
+    
+    if st.button("Set Dependency"):
+        if task_name and dependency_task:
+            dependencies_file = f"{project_name}_dependencies.csv"
+            if os.path.exists(dependencies_file):
+                dependencies_df = pd.read_csv(dependencies_file)
+            else:
+                dependencies_df = pd.DataFrame(columns=["Task", "Dependency"])
+            
+            new_dependency = pd.DataFrame({"Task": [task_name], "Dependency": [dependency_task]})
+            dependencies_df = pd.concat([dependencies_df, new_dependency], ignore_index=True)
+            dependencies_df.to_csv(dependencies_file, index=False)
+            st.success("Dependency added successfully!")
+        else:
+            st.warning("Please enter both the task name and prerequisite task.")
+
+    if os.path.exists(f"{project_name}_dependencies.csv"):
+        st.subheader("Existing Dependencies")
+        dependencies_df = pd.read_csv(f"{project_name}_dependencies.csv")
+        st.dataframe(dependencies_df)
+
+# Resource Management
+def resource_management():
+    st.header("Resource Management")
+    df = load_projects()
+    if df.empty:
+        st.info("No projects available.")
+        return
+    
+    project = st.selectbox("Select Project for Resource Allocation", df["Project Name"].unique())
+    resource_name = st.text_input("Resource Name")
+    allocation_percentage = st.slider("Resource Allocation Percentage", 0, 100, 50)
+    
+    if st.button("Allocate Resource"):
+        if resource_name:
+            resource_file = f"{project}_resources.csv"
+            if os.path.exists(resource_file):
+                resource_df = pd.read_csv(resource_file)
+            else:
+                resource_df = pd.DataFrame(columns=["Resource Name", "Allocation (%)"])
+            
+            new_resource = pd.DataFrame({"Resource Name": [resource_name], "Allocation (%)": [allocation_percentage]})
+            resource_df = pd.concat([resource_df, new_resource], ignore_index=True)
+            resource_df.to_csv(resource_file, index=False)
+            st.success(f"{resource_name} allocated to '{project}'!")
+        else:
+            st.warning("Please enter the resource name.")
+
+    if os.path.exists(f"{project}_resources.csv"):
+        st.subheader("Allocated Resources")
+        resource_df = pd.read_csv(f"{project}_resources.csv")
+        st.dataframe(resource_df)
+
+# Risk Management and Mitigation Tracking
+def risk_management():
+    st.header("Risk Management and Mitigation Tracking")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available.")
+        return
+
+    project = st.selectbox("Select Project for Risk Management", df["Project Name"].unique())
+    risk_description = st.text_input("Risk Description")
+    risk_level = st.selectbox("Risk Level", ["Low", "Medium", "High"])
+    mitigation_strategy = st.text_area("Mitigation Strategy")
+    
+    if st.button("Log Risk"):
+        if risk_description and mitigation_strategy:
+            risk_file = f"{project}_risks.csv"
+            if os.path.exists(risk_file):
+                risk_df = pd.read_csv(risk_file)
+            else:
+                risk_df = pd.DataFrame(columns=["Risk Description", "Risk Level", "Mitigation Strategy"])
+            
+            new_risk = pd.DataFrame({
+                "Risk Description": [risk_description],
+                "Risk Level": [risk_level],
+                "Mitigation Strategy": [mitigation_strategy]
+            })
+            risk_df = pd.concat([risk_df, new_risk], ignore_index=True)
+            risk_df.to_csv(risk_file, index=False)
+            st.success(f"Risk added to '{project}'!")
+        else:
+            st.warning("Please complete all fields to log a risk.")
+
+    if os.path.exists(f"{project}_risks.csv"):
+        st.subheader("Logged Risks")
+        risk_df = pd.read_csv(f"{project}_risks.csv")
+        st.dataframe(risk_df)
+
+# Integration with Third-Party Tools (Simulated example)
+def integration_with_third_party_tools():
+    st.header("Integration with Third-Party Tools")
+    st.info("Here, you can integrate with various third-party tools like Slack, Trello, or Google Workspace.")
+
+    tool = st.selectbox("Select Tool to Integrate", ["Slack", "GitHub", "Trello", "Google Workspace"])
+    if st.button("Integrate"):
+        st.success(f"{tool} has been integrated successfully! (Simulated)")
+
+# Adding the new functions to the sidebar menu
+menu = st.sidebar.selectbox(
+    "Menu", [
+        "Add Project", "Edit Project", "Delete Project", 
+        "Task Management", "High Priority & Deadlines", 
+        "Team Collaboration", "Project Progress Tracking", 
+        "Set Milestones", "Time Tracking", "Document Upload", 
+        "Project Tags & Categories", "Analytics & Reports", 
+        "Calendar View", "Automated Notifications", 
+        "Search and Filter", "Backup & Restore", 
+        "Customizable Status", "Project Templates",
+        "Budget Tracking", "Comments and Notes", 
+        "Prioritization Metrics", "Gantt Chart Visualization",
+        "Task Dependencies and Sequencing", "Resource Management",
+        "Risk Management", "Third-Party Integrations"
+    ]
+)
+
+# Linking each menu item to the corresponding function
+if menu == "Add Project":
+    add_project()
+elif menu == "Edit Project":
+    edit_project()
+elif menu == "Delete Project":
+    delete_project()
+elif menu == "Task Management":
+    manage_tasks()
+elif menu == "High Priority & Deadlines":
+    view_high_priority()
+elif menu == "Team Collaboration":
+    team_collaboration()
+elif menu == "Project Progress Tracking":
+    project_progress()
+elif menu == "Set Milestones":
+    set_milestones()
+elif menu == "Time Tracking":
+    time_tracking()
+elif menu == "Document Upload":
+    document_upload()
+elif menu == "Project Tags & Categories":
+    project_tags()
+elif menu == "Analytics & Reports":
+    analytics()
+elif menu == "Calendar View":
+    calendar_view()
+elif menu == "Automated Notifications":
+    automated_notifications()
+elif menu == "Search and Filter":
+    search_and_filter_projects()
+elif menu == "Backup & Restore":
+    backup_and_restore()
+elif menu == "Customizable Status":
+    customizable_status_options()
+elif menu == "Project Templates":
+    project_templates()
+elif menu == "Budget Tracking":
+    budget_tracking()
+elif menu == "Comments and Notes":
+    comments_and_notes()
+elif menu == "Prioritization Metrics":
+    prioritization_metrics()
+elif menu == "Gantt Chart Visualization":
+    gantt_chart_visualization()
+elif menu == "Task Dependencies and Sequencing":
+    manage_task_dependencies()
+elif menu == "Resource Management":
+    resource_management()
+elif menu == "Risk Management":
+    risk_management()
+elif menu == "Third-Party Integrations":
+    integration_with_third_party_tools()
+
 
