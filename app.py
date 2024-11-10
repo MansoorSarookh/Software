@@ -7,7 +7,7 @@ PROJECT_DATA_FILE = 'projects.csv'
 TASK_DATA_FILE = 'tasks.csv'
 TEAM_DATA_FILE = 'team_members.csv'
 
-st.title("Project Management Tool")
+st.title("Software Management Tool")
 st.title("Developed By Mansoor Sarookh, CS Student at GPGC Swabi")
 
 # Load project data
