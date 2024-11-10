@@ -988,3 +988,166 @@ elif menu == "Comments and Notes":
     comments_and_notes()
 elif menu == "Prioritization Metrics":
     prioritization_metrics()
+# Customizable Status Options: Allows users to create custom project statuses
+def customizable_status_options():
+    st.header("Customizable Status Options")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available.")
+        return
+    
+    # Allow users to select a project and choose a custom status
+    project = st.selectbox("Select Project", df["Project Name"].unique())
+    custom_status = st.text_input("Enter New Status (e.g., In Progress, On Hold)")
+    
+    if st.button("Update Status"):
+        if custom_status:
+            df.loc[df["Project Name"] == project, "Status"] = custom_status
+            save_projects(df)
+            st.success(f"Status for '{project}' updated to '{custom_status}'.")
+        else:
+            st.warning("Please enter a valid status.")
+
+# Comments and Notes: Add a comment section to each project
+def comments_and_notes():
+    st.header("Comments and Notes")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available.")
+        return
+    
+    project = st.selectbox("Select Project for Comments", df["Project Name"].unique())
+    comment = st.text_area("Add Comment or Note")
+    
+    if st.button("Submit Comment"):
+        if comment:
+            comments_file = f"{project}_comments.txt"
+            with open(comments_file, "a") as file:
+                file.write(f"{comment}\n")
+            st.success("Comment added successfully!")
+        else:
+            st.warning("Please enter a comment.")
+    
+    # Display existing comments
+    if os.path.exists(f"{project}_comments.txt"):
+        st.subheader("Existing Comments")
+        with open(f"{project}_comments.txt", "r") as file:
+            comments = file.readlines()
+            for c in comments:
+                st.text(c.strip())
+
+# Automated Notifications for project deadlines and updates
+def automated_notifications():
+    st.header("Automated Notifications")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available.")
+        return
+
+    today = date.today()
+    upcoming_deadlines = df[(pd.to_datetime(df['End Date']) >= today) & (pd.to_datetime(df['End Date']) <= today + pd.Timedelta(days=7))]
+    
+    if not upcoming_deadlines.empty:
+        st.warning("Upcoming Deadlines:")
+        for i, row in upcoming_deadlines.iterrows():
+            st.text(f"{row['Project Name']} - Due on {row['End Date']}")
+    
+    st.success("Notifications are enabled for approaching deadlines and updates.")
+
+# Team Collaboration: Add team members and assign roles to projects
+def team_collaboration():
+    st.header("Team Collaboration")
+    df = load_projects()
+    
+    if df.empty:
+        st.info("No projects available.")
+        return
+    
+    project = st.selectbox("Select Project for Team Collaboration", df["Project Name"].unique())
+    member_name = st.text_input("Team Member Name")
+    role = st.selectbox("Role", ["Team Member", "Project Manager", "Viewer"])
+    
+    if st.button("Add Team Member"):
+        if member_name:
+            team_file = f"{project}_team.csv"
+            if os.path.exists(team_file):
+                team_df = pd.read_csv(team_file)
+            else:
+                team_df = pd.DataFrame(columns=["Member Name", "Role"])
+                
+            new_member = pd.DataFrame({"Member Name": [member_name], "Role": [role]})
+            team_df = pd.concat([team_df, new_member], ignore_index=True)
+            team_df.to_csv(team_file, index=False)
+            st.success(f"{member_name} added to the project as {role}!")
+        else:
+            st.warning("Please enter a team member's name.")
+
+    # Display current team members
+    if os.path.exists(f"{project}_team.csv"):
+        st.subheader("Current Team Members")
+        team_df = pd.read_csv(f"{project}_team.csv")
+        st.dataframe(team_df)
+
+# Add these to the sidebar menu
+menu = st.sidebar.selectbox(
+    "Menu", [
+        "Add Project", "Edit Project", "Delete Project", 
+        "Task Management", "High Priority & Deadlines", 
+        "Team Collaboration", "Project Progress Tracking", 
+        "Set Milestones", "Time Tracking", "Document Upload", 
+        "Project Tags & Categories", "Analytics & Reports", 
+        "Calendar View", "Automated Notifications", 
+        "Search and Filter", "Backup & Restore", 
+        "Customizable Status", "Project Templates",
+        "Budget Tracking", "Comments and Notes", 
+        "Prioritization Metrics"
+    ]
+)
+
+# Connect each function to its respective menu option
+if menu == "Add Project":
+    add_project()
+elif menu == "Edit Project":
+    edit_project()
+elif menu == "Delete Project":
+    delete_project()
+elif menu == "Task Management":
+    manage_tasks()
+elif menu == "High Priority & Deadlines":
+    view_high_priority()
+elif menu == "Team Collaboration":
+    team_collaboration()
+elif menu == "Project Progress Tracking":
+    project_progress()
+elif menu == "Set Milestones":
+    set_milestones()
+elif menu == "Time Tracking":
+    time_tracking()
+elif menu == "Document Upload":
+    document_upload()
+elif menu == "Project Tags & Categories":
+    project_tags()
+elif menu == "Analytics & Reports":
+    analytics()
+elif menu == "Calendar View":
+    calendar_view()
+elif menu == "Automated Notifications":
+    automated_notifications()
+elif menu == "Search and Filter":
+    search_and_filter_projects()
+elif menu == "Backup & Restore":
+    backup_and_restore()
+elif menu == "Customizable Status":
+    customizable_status_options()
+elif menu == "Project Templates":
+    project_templates()
+elif menu == "Budget Tracking":
+    budget_tracking()
+elif menu == "Comments and Notes":
+    comments_and_notes()
+elif menu == "Prioritization Metrics":
+    prioritization_metrics()
+
