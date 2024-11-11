@@ -2,116 +2,99 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 
-# File paths for data storage
+# File to store project data
 PROJECT_DATA_FILE = 'projects.csv'
 TASK_DATA_FILE = 'tasks.csv'
 TEAM_DATA_FILE = 'team_members.csv'
 
-# Load project data
+# Main title in the main body
+st.title("Software Management Tool")
+st.write("Developed By Mansoor Sarookh, CS Student at GPGC Swabi")
+
+# Load and save functions for projects, tasks, and team members
 def load_projects():
     try:
         return pd.read_csv(PROJECT_DATA_FILE)
     except FileNotFoundError:
         return pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date", "Priority", "Status", "Progress", "Budget", "Tags"])
 
-# Save project data
 def save_projects(df):
     df.to_csv(PROJECT_DATA_FILE, index=False)
 
-# Sidebar
-st.sidebar.title("Menu")
-menu_options = {
-    "Add Project": "primary",
-    "Edit Project": "success",
-    "Delete Project": "danger",
-    "Task Management": "info",
-    "High Priority & Deadlines": "warning",
-    "Team Management": "secondary"
+def load_tasks():
+    try:
+        return pd.read_csv(TASK_DATA_FILE)
+    except FileNotFoundError:
+        return pd.DataFrame(columns=["Project Name", "Task Name", "Deadline", "Status", "Assigned To"])
+
+def save_tasks(df):
+    df.to_csv(TASK_DATA_FILE, index=False)
+
+def load_team():
+    try:
+        return pd.read_csv(TEAM_DATA_FILE)
+    except FileNotFoundError:
+        return pd.DataFrame(columns=["Project Name", "Member Name", "Role"])
+
+def save_team(df):
+    df.to_csv(TEAM_DATA_FILE, index=False)
+
+# Functions for each main feature
+def add_project():
+    st.header("Add New Project")
+    # project addition logic here
+
+def edit_project():
+    st.header("Edit Project")
+    # project editing logic here
+
+def delete_project():
+    st.header("Delete Project")
+    # project deletion logic here
+
+def manage_tasks():
+    st.header("Task Management")
+    # task management logic here
+
+def view_high_priority():
+    st.header("Upcoming Deadlines & High Priority Projects")
+    # view deadlines and high-priority projects logic here
+
+def manage_team():
+    st.header("Team Management")
+    # team management logic here
+
+# Sidebar with custom buttons for each functionality
+st.sidebar.markdown("<h3>Menu</h3>", unsafe_allow_html=True)
+
+# Custom button styles
+button_styles = {
+    "Add Project": "background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px;",
+    "Edit Project": "background-color: #2196F3; color: white; padding: 10px; border-radius: 5px;",
+    "Delete Project": "background-color: #f44336; color: white; padding: 10px; border-radius: 5px;",
+    "Task Management": "background-color: #FF9800; color: white; padding: 10px; border-radius: 5px;",
+    "High Priority & Deadlines": "background-color: #9C27B0; color: white; padding: 10px; border-radius: 5px;",
+    "Team Management": "background-color: #3E4551; color: white; padding: 10px; border-radius: 5px;"
 }
 
-# Display each menu item as a button with a different color
-selected_menu = None
-for option, color in menu_options.items():
-    if st.sidebar.button(option, key=option, help=option, type=color):
-        selected_menu = option
+# Display each button with its custom style
+for option, style in button_styles.items():
+    if st.sidebar.markdown(f"<button style='{style}'>{option}</button>", unsafe_allow_html=True):
+        selected_option = option
+        break
+else:
+    selected_option = "Add Project"  # default
 
-# Main UI Title
-st.title("Software Management Tool")
-st.write("Developed By Mansoor Sarookh, CS Student at GPGC Swabi")
-
-# Main Body Functionality
-if selected_menu == "Add Project":
-    st.header("Add New Project")
-    name = st.text_input("Project Name")
-    description = st.text_area("Project Description")
-    start_date = st.date_input("Start Date", date.today())
-    end_date = st.date_input("End Date")
-    priority = st.selectbox("Priority", ["Low", "Medium", "High"])
-    budget = st.number_input("Budget", min_value=0.0)
-    tags = st.text_input("Tags (comma-separated)")
-
-    if st.button("Create Project"):
-        if name and description:
-            new_project = pd.DataFrame({
-                "Project Name": [name],
-                "Description": [description],
-                "Start Date": [start_date],
-                "End Date": [end_date],
-                "Priority": [priority],
-                "Status": ["Uncompleted"],
-                "Progress": [0],
-                "Budget": [budget],
-                "Tags": [tags]
-            })
-            df = load_projects()
-            df = pd.concat([df, new_project], ignore_index=True)
-            save_projects(df)
-            st.success(f"Project '{name}' has been added!")
-        else:
-            st.error("Please fill in all fields")
-
-elif selected_menu == "Edit Project":
-    st.header("Edit Project")
-    df = load_projects()
-    if df.empty:
-        st.info("No projects to edit.")
-    else:
-        project = st.selectbox("Select Project", df["Project Name"])
-        if project:
-            row = df[df["Project Name"] == project].iloc[0]
-            new_name = st.text_input("Project Name", row["Project Name"])
-            description = st.text_area("Project Description", row["Description"])
-            start_date = st.date_input("Start Date", row["Start Date"])
-            end_date = st.date_input("End Date", row["End Date"])
-            priority = st.selectbox("Priority", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(row["Priority"]))
-            budget = st.number_input("Budget", min_value=0.0, value=row["Budget"])
-            tags = st.text_input("Tags", row["Tags"])
-            
-            if st.button("Update Project"):
-                df.loc[df["Project Name"] == project, ["Project Name", "Description", "Start Date", "End Date", "Priority", "Budget", "Tags"]] = new_name, description, start_date, end_date, priority, budget, tags
-                save_projects(df)
-                st.success(f"Project '{new_name}' has been updated.")
-
-elif selected_menu == "Delete Project":
-    st.header("Delete Project")
-    df = load_projects()
-    if df.empty:
-        st.info("No projects to delete.")
-    else:
-        project = st.selectbox("Select Project to Delete", df["Project Name"])
-        if st.button("Delete Project"):
-            df = df[df["Project Name"] != project]
-            save_projects(df)
-            st.success(f"Project '{project}' has been deleted.")
-
-elif selected_menu == "Task Management":
-    st.header("Task Management")
-    # Additional task management code here
-
-elif selected_menu == "High Priority & Deadlines":
-    st.header("Upcoming Deadlines & High Priority Projects")
-    # Additional deadline view code here
-
-elif selected_menu == "Team Management":
-    st.header("Team Management")
-    # Additional team management code here
+# Execute the corresponding function based on the selected option
+if selected_option == "Add Project":
+    add_project()
+elif selected_option == "Edit Project":
+    edit_project()
+elif selected_option == "Delete Project":
+    delete_project()
+elif selected_option == "Task Management":
+    manage_tasks()
+elif selected_option == "High Priority & Deadlines":
+    view_high_priority()
+elif selected_option == "Team Management":
+    manage_team()
