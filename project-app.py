@@ -152,6 +152,24 @@ def manage_tasks():
                 save_tasks(tasks_df)
                 st.success(f"'{task['Task Name']}' marked as completed.")
 
+# High Priority and Upcoming Deadlines
+def view_high_priority():
+    st.header("High Priority Projects & Upcoming Deadlines")
+    df_projects = load_projects()
+    df_tasks = load_tasks()
+
+    # Display high-priority projects
+    high_priority_projects = df_projects[df_projects["Priority"] == "High"]
+    if not high_priority_projects.empty:
+        st.subheader("High Priority Projects")
+        st.table(high_priority_projects[["Project Name", "Description", "End Date", "Progress"]])
+
+    # Display tasks with approaching deadlines
+    upcoming_tasks = df_tasks[pd.to_datetime(df_tasks["Deadline"]) <= (datetime.now() + pd.DateOffset(days=7))]
+    if not upcoming_tasks.empty:
+        st.subheader("Tasks Approaching Deadlines")
+        st.table(upcoming_tasks[["Project Name", "Task Name", "Deadline", "Assigned To"]])
+
 # Sidebar menu - Horizontal
 st.write("---")
 menu_options = ["Add Project", "Edit Project", "Delete Project", "Task Management", "High Priority & Deadlines", "Team Management"]
@@ -169,4 +187,5 @@ elif selected_menu == "Task Management":
 elif selected_menu == "High Priority & Deadlines":
     view_high_priority()
 elif selected_menu == "Team Management":
-    manage_team()
+    st.write("Team management feature coming soon.")
+
