@@ -42,50 +42,82 @@ def save_team(df):
 # Functions for each main feature
 def add_project():
     st.header("Add New Project")
-    # project addition logic here
+    name = st.text_input("Project Name")
+    description = st.text_area("Project Description")
+    start_date = st.date_input("Start Date", date.today())
+    end_date = st.date_input("End Date")
+    priority = st.selectbox("Priority", ["Low", "Medium", "High"])
+    budget = st.number_input("Budget", min_value=0.0)
+    tags = st.text_input("Tags (comma-separated)")
+    
+    if st.button("Create Project"):
+        if name and description:
+            new_project = pd.DataFrame({
+                "Project Name": [name],
+                "Description": [description],
+                "Start Date": [start_date],
+                "End Date": [end_date],
+                "Priority": [priority],
+                "Status": ["Uncompleted"],
+                "Progress": [0],
+                "Budget": [budget],
+                "Tags": [tags]
+            })
+            df = load_projects()
+            df = pd.concat([df, new_project], ignore_index=True)
+            save_projects(df)
+            st.success(f"Project '{name}' has been added!")
+        else:
+            st.error("Please fill in all fields")
 
-def edit_project():
-    st.header("Edit Project")
-    # project editing logic here
+# Other functions such as edit_project, delete_project, manage_tasks, view_high_priority, manage_team...
 
-def delete_project():
-    st.header("Delete Project")
-    # project deletion logic here
-
-def manage_tasks():
-    st.header("Task Management")
-    # task management logic here
-
-def view_high_priority():
-    st.header("Upcoming Deadlines & High Priority Projects")
-    # view deadlines and high-priority projects logic here
-
-def manage_team():
-    st.header("Team Management")
-    # team management logic here
-
-# Sidebar with custom buttons for each functionality
+# Sidebar with functional buttons and custom colors
 st.sidebar.markdown("<h3>Menu</h3>", unsafe_allow_html=True)
 
-# Custom button styles
-button_styles = {
-    "Add Project": "background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px;",
-    "Edit Project": "background-color: #2196F3; color: white; padding: 10px; border-radius: 5px;",
-    "Delete Project": "background-color: #f44336; color: white; padding: 10px; border-radius: 5px;",
-    "Task Management": "background-color: #FF9800; color: white; padding: 10px; border-radius: 5px;",
-    "High Priority & Deadlines": "background-color: #9C27B0; color: white; padding: 10px; border-radius: 5px;",
-    "Team Management": "background-color: #3E4551; color: white; padding: 10px; border-radius: 5px;"
-}
+# Set the selected option based on button clicks
+selected_option = None
 
-# Display each button with its custom style
-for option, style in button_styles.items():
-    if st.sidebar.markdown(f"<button style='{style}'>{option}</button>", unsafe_allow_html=True):
-        selected_option = option
-        break
-else:
-    selected_option = "Add Project"  # default
+# Define a helper to create colored buttons in sidebar
+def colored_button(label, color):
+    return st.sidebar.markdown(
+        f"""
+        <style>
+            .button {{
+                background-color: {color};
+                color: white;
+                padding: 8px;
+                border-radius: 5px;
+                width: 100%;
+                text-align: center;
+                margin: 2px 0;
+                cursor: pointer;
+                font-weight: bold;
+            }}
+            .button:hover {{
+                opacity: 0.9;
+            }}
+        </style>
+        <div class="button" onclick="window.location.href='#{label.replace(' ', '').lower()}'">{label}</div>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Execute the corresponding function based on the selected option
+# Display sidebar buttons
+if st.sidebar.button("Add Project"):
+    selected_option = "Add Project"
+elif st.sidebar.button("Edit Project"):
+    selected_option = "Edit Project"
+elif st.sidebar.button("Delete Project"):
+    selected_option = "Delete Project"
+elif st.sidebar.button("Task Management"):
+    selected_option = "Task Management"
+elif st.sidebar.button("High Priority & Deadlines"):
+    selected_option = "High Priority & Deadlines"
+elif st.sidebar.button("Team Management"):
+    selected_option = "Team Management"
+
+# Execute the selected function
 if selected_option == "Add Project":
     add_project()
 elif selected_option == "Edit Project":
