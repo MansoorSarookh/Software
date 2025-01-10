@@ -814,25 +814,25 @@ def budget_tracking():
             mime="text/csv",
         )
 
-    # Overall budgets of the selected project
-    overall_project_data = df[df["Project Name"] == project][["Project Name", "Budget", "Expenses"]]
-    if not overall_project_data.empty:
-        overall_csv = overall_project_data.to_csv(index=False)
-        st.download_button(
-            label=f"Download Overall Budget for {project}",
-            data=overall_csv,
-            file_name=f"{project}_overall_budget.csv",
-            mime="text/csv",
-        )
+    # # Overall budgets of the selected project
+    # overall_project_data = df[df["Project Name"] == project][["Project Name", "Budget", "Expenses"]]
+    # if not overall_project_data.empty:
+    #     overall_csv = overall_project_data.to_csv(index=False)
+    #     st.download_button(
+    #         label=f"Download Overall Budget for {project}",
+    #         data=overall_csv,
+    #         file_name=f"{project}_overall_budget.csv",
+    #         mime="text/csv",
+    #     )
 
-    # All projects' budgets
-    all_csv = df.to_csv(index=False)
-    st.download_button(
-        label="Download All Projects Budget",
-        data=all_csv,
-        file_name="all_projects_budget.csv",
-        mime="text/csv",
-    )
+    # # All projects' budgets
+    # all_csv = df.to_csv(index=False)
+    # st.download_button(
+    #     label="Download All Projects Budget",
+    #     data=all_csv,
+    #     file_name="all_projects_budget.csv",
+    #     mime="text/csv",
+    # )
 
 
 
